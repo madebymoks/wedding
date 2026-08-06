@@ -686,28 +686,28 @@ function App() {
           </div>
 
           {/* bottom: divider, date, RSVP */}
-          <div className="relative z-10 mt-auto px-6 pb-10 text-center text-beige-light sm:pb-14">
+          <div className="relative z-10 mt-auto px-6 pb-6 text-center text-beige-light sm:pb-10">
             <motion.hr
               variants={heroItemVariants}
               className="mx-auto w-16 border-beige-light/50"
             />
             <motion.p
               variants={heroItemVariants}
-              className="mt-6 font-serif text-xl font-medium tracking-[0.15em] drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)] sm:text-3xl"
+              className="mt-4 font-serif text-xl font-medium tracking-[0.15em] drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)] sm:text-3xl"
             >
               {WEDDING.dateLabel}
             </motion.p>
             <motion.a
               variants={heroItemVariants}
               href="#rsvp"
-              className="mt-8 inline-block rounded-full border border-beige-light bg-black/25 px-8 py-3 font-serif text-lg uppercase tracking-[0.3em] shadow-lg backdrop-blur-sm transition-colors hover:bg-beige-light/20"
+              className="mt-6 inline-block rounded-full border border-beige-light bg-black/25 px-8 py-3 font-serif text-lg uppercase tracking-[0.3em] shadow-lg backdrop-blur-sm transition-colors hover:bg-beige-light/20"
             >
               RSVP
             </motion.a>
             <a
               href="#welcome"
               aria-label="Scroll down"
-              className="mt-8 block animate-bounce text-3xl text-beige-light drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]"
+              className="mt-4 block animate-bounce text-3xl text-beige-light drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]"
             >
               ↓
             </a>
