@@ -566,7 +566,7 @@ function Rsvp() {
   )
 }
 
-const ULULATION_VOLUME = 0.15
+const ULULATION_VOLUME = 0.14
 const ULULATION_FADE_OUT_S = 1.5
 // matches the `lg:hidden` breakpoint the envelope/hero are wrapped in —
 // desktop never shows an envelope, so it counts as "past" it immediately
