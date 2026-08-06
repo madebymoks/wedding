@@ -14,6 +14,7 @@ import onABoat from './assets/onaboat.jpeg'
 import proposal from './assets/proposal.jpeg'
 import proposalOther from './assets/proposal-other.jpeg'
 import dresscode from './assets/dresscode.png'
+import heels from './assets/heels.png'
 import gift from './assets/gift.png'
 import ululation from './assets/ululation.mp3'
 
@@ -565,8 +566,8 @@ function Rsvp() {
   )
 }
 
-const ULULATION_REPEAT_MS = 30000
-const ULULATION_VOLUME = 0.6
+const ULULATION_VOLUME = 0.15
+const ULULATION_FADE_OUT_S = 1.5
 // matches the `lg:hidden` breakpoint the envelope/hero are wrapped in —
 // desktop never shows an envelope, so it counts as "past" it immediately
 const DESKTOP_QUERY = '(min-width: 1024px)'
@@ -579,9 +580,25 @@ function App() {
   const audioRef = useRef(null)
 
   // `volume` has no HTML attribute equivalent — it's a JS-property-only
-  // setting, so it has to be assigned imperatively rather than via JSX
+  // setting, so it has to be assigned imperatively rather than via JSX.
+  // Also fade the volume down over the last second and a half instead of
+  // cutting the sound off abruptly
   useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = ULULATION_VOLUME
+    const audio = audioRef.current
+    if (!audio) return
+    audio.volume = ULULATION_VOLUME
+    const handleTimeUpdate = () => {
+      if (!audio.duration) return
+      const remaining = audio.duration - audio.currentTime
+      if (remaining <= ULULATION_FADE_OUT_S) {
+        audio.volume = Math.max(
+          0,
+          Math.min(ULULATION_VOLUME, ULULATION_VOLUME * (remaining / ULULATION_FADE_OUT_S))
+        )
+      }
+    }
+    audio.addEventListener('timeupdate', handleTimeUpdate)
+    return () => audio.removeEventListener('timeupdate', handleTimeUpdate)
   }, [])
 
   // every load/reload should start at the very top — on mobile that means
@@ -595,7 +612,11 @@ function App() {
   }, [])
 
   const playUlulation = () => {
-    audioRef.current?.play().catch(() => {})
+    const audio = audioRef.current
+    if (!audio) return
+    // reset in case the previous play faded all the way down near its end
+    audio.volume = ULULATION_VOLUME
+    audio.play().catch(() => {})
   }
 
   // desktop has no envelope to dismiss, so the user counts as "past" it
@@ -605,12 +626,10 @@ function App() {
     if (window.matchMedia(DESKTOP_QUERY).matches) setPastEnvelope(true)
   }, [])
 
-  // once past the envelope, play immediately, then every 30s after that
+  // plays exactly once, right when the user gets past the envelope
   useEffect(() => {
     if (!pastEnvelope) return
     playUlulation()
-    const id = setInterval(playUlulation, ULULATION_REPEAT_MS)
-    return () => clearInterval(id)
   }, [pastEnvelope])
 
   const toggleMuted = () => {
@@ -625,24 +644,31 @@ function App() {
     <motion.div className="relative overflow-x-hidden bg-beige-light">
       <audio ref={audioRef} src={ululation} muted={muted} />
 
-      <button
-        type="button"
-        onClick={toggleMuted}
-        aria-label={muted ? 'Unmute sound' : 'Mute sound'}
-        className="fixed bottom-6 right-6 z-60 flex h-12 w-12 items-center justify-center rounded-full bg-sage-dark text-beige-light shadow-lg transition-transform hover:scale-105"
-      >
-        {muted ? (
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 9v6h4l5 5V4L7 9H3Z" />
-            <path d="M17 9l5 6M22 9l-5 6" />
-          </svg>
-        ) : (
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 9v6h4l5 5V4L7 9H3Z" />
-            <path d="M16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14" />
-          </svg>
-        )}
-      </button>
+      {/* only once the envelope has finished fading away — on desktop
+          there's no envelope, so pastEnvelope is already true by then */}
+      {pastEnvelope && (
+        <motion.button
+          type="button"
+          onClick={toggleMuted}
+          aria-label={muted ? 'Unmute sound' : 'Mute sound'}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="fixed bottom-6 right-6 z-60 flex h-12 w-12 items-center justify-center rounded-full bg-sage-dark text-beige-light shadow-lg transition-transform hover:scale-105"
+        >
+          {muted ? (
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9v6h4l5 5V4L7 9H3Z" />
+              <path d="M17 9l5 6M22 9l-5 6" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9v6h4l5 5V4L7 9H3Z" />
+              <path d="M16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14" />
+            </svg>
+          )}
+        </motion.button>
+      )}
 
       {/* computers only: mobile/tablet visitors are already on the site,
           this is for anyone browsing on a desktop to hop onto their phone */}
@@ -703,7 +729,7 @@ function App() {
           </div>
 
           {/* bottom: divider, date, RSVP */}
-          <div className="relative z-10 mt-auto px-6 pb-7.5 text-center text-beige-light">
+          <div className="relative z-10 mt-auto px-6 pb-20 text-center text-beige-light">
             <motion.hr
               variants={heroItemVariants}
               className="mx-auto w-16 border-beige-light/50"
@@ -818,11 +844,18 @@ function App() {
       {/* 6. Dress code */}
       <Section id="dress-code" contentClassName="mt-2">
         <div className="flex flex-col items-center gap-6">
-          <img
-            src={dresscode}
-            alt=""
-            className="w-1/3 max-w-32 select-none"
-          />
+          <div className="flex items-center justify-center gap-4">
+            <img
+              src={dresscode}
+              alt=""
+              className="w-1/3 max-w-32 select-none"
+            />
+            <img
+              src={heels}
+              alt=""
+              className="w-1/3 max-w-32 select-none"
+            />
+          </div>
           <h2 className="font-script text-4xl text-sage-dark sm:text-5xl">
             Dress Code
           </h2>
