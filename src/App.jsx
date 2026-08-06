@@ -767,14 +767,14 @@ function App() {
             </p>
             <hr className="mx-auto my-6 w-24 border-sage-dark/20" />
             <p className="text-xl">{WEDDING.venue.address}</p>
-            {/* <a
+            <a
               href={WEDDING.venue.mapsUrl}
               target="_blank"
               rel="noreferrer"
               className="mt-6 inline-block font-serif text-lg uppercase tracking-[0.3em] text-sage underline underline-offset-4"
             >
               Google Maps
-            </a> */}
+            </a>
           </Card>
         </div>
       </Section>
