@@ -380,7 +380,11 @@ const rsvpSchema = Yup.object({
   // is needed while it isn't user-editable
   mobileNumber: Yup.string()
     .trim()
-    .matches(/^[0-9+()\- ]{7,20}$/, 'Enter a valid mobile number')
+    .test(
+      'is-8-digits',
+      'Enter an 8-digit mobile number',
+      (value) => !!value && value.replace(/\D/g, '').length === 8
+    )
     .required('Please enter your mobile number'),
   message: Yup.string().max(500, 'Keep it under 500 characters'),
 })
@@ -520,7 +524,7 @@ function Rsvp() {
             value={formik.values.mobileNumber}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            placeholder="e.g. 072 123 4567"
+            placeholder="e.g. 72 123 456"
             className="w-full rounded-lg border border-sage-dark/30 bg-white/80 px-4 py-2"
           />
           {formik.touched.mobileNumber && formik.errors.mobileNumber && (
