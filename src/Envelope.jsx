@@ -47,11 +47,11 @@ function Envelope({ onDismissed }) {
             className="absolute inset-0 h-full w-full"
           />
           <motion.span
-            className="pointer-events-none absolute inset-x-0 bottom-14 text-center font-serif text-lg uppercase tracking-[0.35em] text-sage-dark/80 sm:text-xl"
+            className="pointer-events-none absolute inset-x-0 bottom-14 text-center font-serif text-lg font-semibold uppercase tracking-[0.35em] text-black drop-shadow-[0_1px_3px_rgba(255,255,255,0.8)] sm:text-xl"
             animate={
               opening
                 ? { opacity: 0, y: 0 }
-                : { opacity: [0.4, 1, 0.4], y: [0, -5, 0] }
+                : { opacity: [0.7, 1, 0.7], y: [0, -5, 0] }
             }
             transition={
               opening
