@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
+import { QRCodeSVG } from 'qrcode.react'
 import Envelope from './Envelope'
 import { supabase } from './lib/supabase'
 import brideGroomVideo from './assets/brideandgroom.mp4'
@@ -84,7 +85,7 @@ const WEDDING = {
     ],
     bank: {
       name: 'Standard Chartered Bank Botswana',
-      accountName: 'Kago S Makgatlhe',
+      accountName: 'Kago Makgatlhe',
       accountNumber: '01004 0254 0500',
       branch: '660167',
     },
@@ -373,10 +374,9 @@ const rsvpSchema = Yup.object({
   attending: Yup.string()
     .oneOf(['yes', 'no'])
     .required('Please let us know if you can make it'),
-  partySize: Yup.number()
-    .min(1, 'At least 1 person')
-    .max(10, 'Max 10 people')
-    .required('Please enter your party size'),
+  // partySize: party-size stepper is disabled (see Rsvp's JSX below) — the
+  // field still exists on `rsvps` and always submits as 1, so no validation
+  // is needed while it isn't user-editable
   mobileNumber: Yup.string()
     .trim()
     .matches(/^[0-9+()\- ]{7,20}$/, 'Enter a valid mobile number')
@@ -415,9 +415,9 @@ function Rsvp() {
     },
   })
 
-  const setPartySize = (next) => {
-    formik.setFieldValue('partySize', Math.min(10, Math.max(1, next)))
-  }
+  // const setPartySize = (next) => {
+  //   formik.setFieldValue('partySize', Math.min(10, Math.max(1, next)))
+  // }
 
   if (sent) {
     return (
@@ -477,7 +477,7 @@ function Rsvp() {
           ))}
         </fieldset>
 
-        <div>
+        {/* <div>
           <span className="mb-3 block text-xl font-medium">
             Number of people in your party
           </span>
@@ -507,7 +507,7 @@ function Rsvp() {
               {formik.errors.partySize}
             </span>
           )}
-        </div>
+        </div> */}
 
         <label className="block">
           <span className="mb-1 block text-lg uppercase tracking-widest text-sage-dark/70">
@@ -566,15 +566,23 @@ function Rsvp() {
 }
 
 const ULULATION_REPEAT_MS = 30000
+const ULULATION_VOLUME = 0.6
 // matches the `lg:hidden` breakpoint the envelope/hero are wrapped in —
 // desktop never shows an envelope, so it counts as "past" it immediately
 const DESKTOP_QUERY = '(min-width: 1024px)'
+const SITE_URL = 'https://mokswedskago.com'
 
 function App() {
   const [heroVisible, setHeroVisible] = useState(false)
   const [muted, setMuted] = useState(false)
   const [pastEnvelope, setPastEnvelope] = useState(false)
   const audioRef = useRef(null)
+
+  // `volume` has no HTML attribute equivalent — it's a JS-property-only
+  // setting, so it has to be assigned imperatively rather than via JSX
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = ULULATION_VOLUME
+  }, [])
 
   // every load/reload should start at the very top — on mobile that means
   // the envelope, on desktop the top of the two-column layout — never
@@ -636,6 +644,15 @@ function App() {
         )}
       </button>
 
+      {/* computers only: mobile/tablet visitors are already on the site,
+          this is for anyone browsing on a desktop to hop onto their phone */}
+      <div className="fixed right-6 top-6 z-60 hidden max-w-42 flex-col items-center gap-2 rounded-2xl bg-beige-light/95 p-4 text-center shadow-lg lg:flex">
+        <QRCodeSVG value={SITE_URL} size={112} fgColor="#5F6E52" bgColor="transparent" />
+        <p className="font-serif text-sm leading-snug text-sage-dark">
+          Best viewed on mobile — scan to open on your phone
+        </p>
+      </div>
+
       {/* mobile/tablet only: tap-to-open envelope, then the full-screen hero.
           computers skip straight to the two-column layout below */}
       <div className="lg:hidden">
@@ -659,7 +676,7 @@ function App() {
           playsInline
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/35" />
+        <div className="pointer-events-none absolute inset-0 bg-black/35" />
 
         <motion.div
           className="contents"
@@ -716,10 +733,11 @@ function App() {
       </section>
       </div>
 
-      {/* computers: two-column layout — content sections on the left,
-          RSVP pinned on the right. Mobile/tablet just stacks everything
-          in document order, same as before */}
-      <div className="lg:mx-auto lg:grid lg:max-w-6xl lg:grid-cols-2 lg:items-start lg:gap-x-16 lg:px-6 lg:py-16">
+      {/* computers: a top section (welcome/venue/countdown + dress code/gifts
+          in two columns) followed by a bottom section for RSVP. Mobile/tablet
+          just stacks everything in document order, same as before */}
+      <div className="lg:mx-auto lg:max-w-7xl lg:px-6 lg:pb-16 lg:pt-8">
+        <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10">
         <div>
 
       {/* 2. Welcome */}
@@ -765,6 +783,10 @@ function App() {
       <Section id="countdown" contentClassName="mt-2">
         <CountdownCard />
       </Section>
+
+        </div>
+
+        <div>
 
       {/* 5. Day programme — vertical timeline
       <Section
@@ -879,6 +901,7 @@ function App() {
       </Section>
 
         </div>
+        </div>
 
         {/* 11. Gallery — auto-looping carousel; hidden on computers */}
         <div className="lg:hidden">
@@ -887,8 +910,8 @@ function App() {
           </Section>
         </div>
 
-        {/* 12. RSVP — pinned in the right column on computers */}
-        <div className="lg:sticky lg:top-16 lg:self-start">
+        {/* 12. RSVP — bottom section on computers */}
+        <div className="lg:mt-8">
           <Section id="rsvp" title="RSVP" subtitle="Let us know if you can make it">
             <Rsvp />
           </Section>
