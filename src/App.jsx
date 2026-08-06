@@ -283,13 +283,13 @@ function Countdown() {
     [seconds, 'Seconds'],
   ]
   return (
-    <div className="flex justify-center gap-6">
+    <div className="flex justify-center gap-3">
       {units.map(([value, label]) => (
         <div key={label} className="text-center">
-          <div className="font-serif text-4xl text-sage-dark tabular-nums">
+          <div className="font-serif text-3xl text-sage-dark tabular-nums">
             {String(value).padStart(2, '0')}
           </div>
-          <div className="mt-1 font-serif text-sm uppercase tracking-[0.25em] text-sage-dark/70">
+          <div className="mt-1 font-serif text-sm uppercase tracking-widest text-sage-dark/70">
             {label}
           </div>
         </div>
@@ -316,7 +316,7 @@ function CountdownCard() {
 
   return (
     <motion.div
-      className="relative"
+      className="relative mx-auto max-w-xs"
       onViewportEnter={() => setOpened(true)}
       viewport={{ once: true, amount: 0.6 }}
     >
@@ -668,7 +668,7 @@ function App() {
           animate={heroVisible ? 'visible' : 'hidden'}
         >
           {/* top: eyebrow + couple's names */}
-          <div className="relative z-10 flex flex-col items-center gap-8 px-6 pt-36 text-center text-beige-light sm:gap-10 sm:pt-44">
+          <div className="relative z-10 flex flex-col items-center gap-8 px-6 pt-15 text-center text-beige-light sm:gap-10">
             <motion.p
               variants={heroItemVariants}
               className="font-serif text-base uppercase tracking-[0.4em] sm:text-lg"
@@ -686,7 +686,7 @@ function App() {
           </div>
 
           {/* bottom: divider, date, RSVP */}
-          <div className="relative z-10 mt-auto px-6 pb-6 text-center text-beige-light sm:pb-10">
+          <div className="relative z-10 mt-auto px-6 pb-7.5 text-center text-beige-light">
             <motion.hr
               variants={heroItemVariants}
               className="mx-auto w-16 border-beige-light/50"
