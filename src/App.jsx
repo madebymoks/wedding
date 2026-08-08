@@ -395,7 +395,6 @@ function Rsvp() {
 
   const formik = useFormik({
     initialValues: {
-      guestType: 'solo',
       name: '',
       attending: 'yes',
       partySize: 1,
@@ -425,8 +424,6 @@ function Rsvp() {
   //   formik.setFieldValue('partySize', Math.min(10, Math.max(1, next)))
   // }
 
-  const isCouple = formik.values.guestType === 'couple'
-
   if (sent) {
     return (
       <Card>
@@ -443,41 +440,9 @@ function Rsvp() {
   return (
     <Card className="text-left">
       <form onSubmit={formik.handleSubmit} className="flex flex-col gap-6" noValidate>
-        <div>
-          <span className="mb-3 block text-xl font-medium">
-            Are you responding for yourself or as a couple?
-          </span>
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => formik.setFieldValue('guestType', 'solo')}
-              aria-pressed={!isCouple}
-              className={`flex-1 rounded-lg border px-4 py-2 font-serif text-lg transition-colors ${
-                !isCouple
-                  ? 'border-sage-dark bg-sage-dark text-beige-light'
-                  : 'border-sage-dark/30 bg-white/80 text-sage-dark'
-              }`}
-            >
-              Just me
-            </button>
-            <button
-              type="button"
-              onClick={() => formik.setFieldValue('guestType', 'couple')}
-              aria-pressed={isCouple}
-              className={`flex-1 rounded-lg border px-4 py-2 font-serif text-lg transition-colors ${
-                isCouple
-                  ? 'border-sage-dark bg-sage-dark text-beige-light'
-                  : 'border-sage-dark/30 bg-white/80 text-sage-dark'
-              }`}
-            >
-              My partner &amp; I
-            </button>
-          </div>
-        </div>
-
         <label className="block">
           <span className="mb-1 block text-lg uppercase tracking-widest text-sage-dark/70">
-            {isCouple ? 'Name(s)' : 'Full Name'}
+            Name
           </span>
           <input
             type="text"
@@ -485,14 +450,9 @@ function Rsvp() {
             value={formik.values.name}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            placeholder={isCouple ? 'e.g. Mr & Mrs Kgosi' : 'Your full name'}
+            placeholder="Full name"
             className="w-full rounded-lg border border-sage-dark/30 bg-white/80 px-4 py-2"
           />
-          {isCouple && (
-            <span className="mt-1 block text-sm italic text-sage-dark/70">
-              One response covers both of you
-            </span>
-          )}
           {formik.touched.name && formik.errors.name && (
             <span className="mt-1 block text-lg text-red-700">
               {formik.errors.name}
@@ -610,7 +570,7 @@ function Rsvp() {
   )
 }
 
-const ULULATION_VOLUME = 0.14
+const ULULATION_VOLUME = 0.1
 const ULULATION_FADE_OUT_S = 1.5
 // matches the `lg:hidden` breakpoint the envelope/hero are wrapped in —
 // desktop never shows an envelope, so it counts as "past" it immediately
@@ -621,12 +581,14 @@ function App() {
   const [heroVisible, setHeroVisible] = useState(false)
   const [muted, setMuted] = useState(false)
   const [pastEnvelope, setPastEnvelope] = useState(false)
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false)
   const audioRef = useRef(null)
 
   // `volume` has no HTML attribute equivalent — it's a JS-property-only
   // setting, so it has to be assigned imperatively rather than via JSX.
   // Also fade the volume down over the last second and a half instead of
-  // cutting the sound off abruptly
+  // cutting the sound off abruptly, and track real play state so the mute
+  // button can show only while the sound is actually playing
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
@@ -641,8 +603,18 @@ function App() {
         )
       }
     }
+    const handlePlay = () => setIsAudioPlaying(true)
+    const handleStop = () => setIsAudioPlaying(false)
     audio.addEventListener('timeupdate', handleTimeUpdate)
-    return () => audio.removeEventListener('timeupdate', handleTimeUpdate)
+    audio.addEventListener('play', handlePlay)
+    audio.addEventListener('ended', handleStop)
+    audio.addEventListener('pause', handleStop)
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate)
+      audio.removeEventListener('play', handlePlay)
+      audio.removeEventListener('ended', handleStop)
+      audio.removeEventListener('pause', handleStop)
+    }
   }, [])
 
   // every load/reload should start at the very top — on mobile that means
@@ -684,13 +656,36 @@ function App() {
     })
   }
 
+  const handlePlaySound = () => {
+    setMuted(false)
+    playUlulation()
+  }
+
   return (
     <motion.div className="relative overflow-x-hidden bg-beige-light">
       <audio ref={audioRef} src={ululation} muted={muted} />
 
-      {/* only once the envelope has finished fading away — on desktop
-          there's no envelope, so pastEnvelope is already true by then */}
+      {/* "Play sound" button — commented out
       {pastEnvelope && (
+        <motion.button
+          type="button"
+          onClick={handlePlaySound}
+          aria-label="Play sound"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="fixed bottom-22 right-6 z-60 flex h-12 w-12 items-center justify-center rounded-full bg-sage-dark text-beige-light shadow-lg transition-transform hover:scale-105"
+        >
+          <svg viewBox="0 0 24 24" className="ml-0.5 h-6 w-6" fill="currentColor" stroke="none">
+            <path d="M7 4.5v15l13-7.5-13-7.5Z" />
+          </svg>
+        </motion.button>
+      )}
+      */}
+
+      {/* only while the sound is actually playing — muting it doesn't stop
+          playback (just silences it), so this stays up until it truly ends */}
+      {isAudioPlaying && (
         <motion.button
           type="button"
           onClick={toggleMuted}
@@ -703,12 +698,12 @@ function App() {
           {muted ? (
             <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 9v6h4l5 5V4L7 9H3Z" />
-              <path d="M17 9l5 6M22 9l-5 6" />
+              <path d="M16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14" />
             </svg>
           ) : (
             <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 9v6h4l5 5V4L7 9H3Z" />
-              <path d="M16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14" />
+              <path d="M17 9l5 6M22 9l-5 6" />
             </svg>
           )}
         </motion.button>
