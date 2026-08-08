@@ -395,6 +395,7 @@ function Rsvp() {
 
   const formik = useFormik({
     initialValues: {
+      guestType: 'solo',
       name: '',
       attending: 'yes',
       partySize: 1,
@@ -424,6 +425,8 @@ function Rsvp() {
   //   formik.setFieldValue('partySize', Math.min(10, Math.max(1, next)))
   // }
 
+  const isCouple = formik.values.guestType === 'couple'
+
   if (sent) {
     return (
       <Card>
@@ -440,9 +443,41 @@ function Rsvp() {
   return (
     <Card className="text-left">
       <form onSubmit={formik.handleSubmit} className="flex flex-col gap-6" noValidate>
+        <div>
+          <span className="mb-3 block text-xl font-medium">
+            Are you responding for yourself or as a couple?
+          </span>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => formik.setFieldValue('guestType', 'solo')}
+              aria-pressed={!isCouple}
+              className={`flex-1 rounded-lg border px-4 py-2 font-serif text-lg transition-colors ${
+                !isCouple
+                  ? 'border-sage-dark bg-sage-dark text-beige-light'
+                  : 'border-sage-dark/30 bg-white/80 text-sage-dark'
+              }`}
+            >
+              Just me
+            </button>
+            <button
+              type="button"
+              onClick={() => formik.setFieldValue('guestType', 'couple')}
+              aria-pressed={isCouple}
+              className={`flex-1 rounded-lg border px-4 py-2 font-serif text-lg transition-colors ${
+                isCouple
+                  ? 'border-sage-dark bg-sage-dark text-beige-light'
+                  : 'border-sage-dark/30 bg-white/80 text-sage-dark'
+              }`}
+            >
+              My partner &amp; I
+            </button>
+          </div>
+        </div>
+
         <label className="block">
           <span className="mb-1 block text-lg uppercase tracking-widest text-sage-dark/70">
-            Name
+            {isCouple ? 'Name(s)' : 'Full Name'}
           </span>
           <input
             type="text"
@@ -450,9 +485,14 @@ function Rsvp() {
             value={formik.values.name}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            placeholder="Full name"
+            placeholder={isCouple ? 'e.g. Mr & Mrs Kgosi' : 'Your full name'}
             className="w-full rounded-lg border border-sage-dark/30 bg-white/80 px-4 py-2"
           />
+          {isCouple && (
+            <span className="mt-1 block text-sm italic text-sage-dark/70">
+              One response covers both of you
+            </span>
+          )}
           {formik.touched.name && formik.errors.name && (
             <span className="mt-1 block text-lg text-red-700">
               {formik.errors.name}
