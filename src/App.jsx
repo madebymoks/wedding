@@ -627,6 +627,18 @@ function App() {
     window.scrollTo(0, 0)
   }, [])
 
+  // the envelope visually covers the whole screen, but the page underneath
+  // can still be scrolled (keyboard, wheel, touch) unless we lock it —
+  // otherwise dismissing the envelope could reveal a mid-page scroll
+  // position instead of the hero. Locked on body, not html, since
+  // overflow-x: hidden on <html> specifically breaks Safari scrolling
+  useEffect(() => {
+    document.body.style.overflow = pastEnvelope ? '' : 'hidden'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [pastEnvelope])
+
   const playUlulation = () => {
     const audio = audioRef.current
     if (!audio) return
