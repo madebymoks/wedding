@@ -33,7 +33,7 @@ const WEDDING = {
     name: 'Molapo Gardens',
     address: 'Xhosa 1, Mahalapye',
     time: '14:00',
-    mapsUrl: 'https://maps.google.com',
+    mapsUrl: 'https://maps.google.com/maps/place//data=!4m2!3m1!1s0x1eb0a10031c5bd89:0x5a16f3111995a134?entry=s&sa=X&ved=2ahUKEwjDuOypnbyXAxWXQUEAHS0oKWMQ4kB6BAgYEAA&hl=en',
   },
   programme: [
     { time: '14:00', label: 'Arrival' },
